@@ -1,0 +1,100 @@
+version: 4.9
+
+services:
+  network:
+    image: centos7-systemd-cgroupv2:latest
+    container_name: media_network
+    hostname: media_network
+    command: /usr/lib/systemd/systemd
+    memory: 256m
+    networks:
+      - podman-bridge
+    mac_address: 56:2f:2c:e0:bc:e9
+    detach: true
+    stdin_open: true
+    tty: true
+    restart: always
+    systemd: always
+    environment:
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    post_start:
+      - command: |
+          /bin/bash -c "/usr/bin/uuidgen | sed 's/-//g' > /etc/machine-id"
+
+  filebrowser:
+    image: docker.io/filebrowser/filebrowser:latest
+    container_name: media_filebrowser
+    hostname: media_filebrowser
+    memory: 4g
+    network_mode: "service:network"
+    stdin_open: true
+    tty: true
+    restart: always
+    healthcheck:
+      disable: true
+    user: "1000:100"
+    environment:
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Storage01:/srv/jiayaohuang
+      - /media/Storage01/temp/guest-upload:/srv/guest
+      - /media/Data/docker/podman-media_filebrowser/filebrowser.db:/database.db
+      - /media/Data/docker/podman-media_filebrowser/.filebrowser.json:/.filebrowser.json
+    depends_on:
+      - network
+
+  qbittorrent:
+    image:  lscr.io/linuxserver/qbittorrent:latest
+    container_name: media_qbittorrent
+    hostname: media_qbittorrent
+    memory: 4g
+    network_mode: "service:network"
+    stdin_open: true
+    tty: true
+    restart: always
+    user: "1000:100"
+    environment:
+      - PUID=1000
+      - GUID=100
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+      - WEBUI_PORT=6880
+      - TORRENTING_PORT=6881
+    ports: ""
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Data/docker/podman-media_qbittorrent/config:/config
+      - /media/Downloads/qbittorrent:/downloads
+    depends_on:
+      - network
+
+  flare:
+    image: soulteary/flare
+    container_name: media_flare
+    hostname: media_flare
+    memory: 256m
+    network_mode: "service:network"
+    stdin_open: true
+    tty: true
+    restart: always
+    command: flare
+    # ports:
+    #   - 5005:5005
+    env_file:
+      - flare.env
+    environment:
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Data/docker/podman-media_flare/app:/app
+    depends_on:
+      - network
+
+networks:
+  podman-bridge:
+    external: true

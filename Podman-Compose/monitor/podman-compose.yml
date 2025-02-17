@@ -1,0 +1,76 @@
+version: 4.9
+
+services:
+  network:
+    image: centos7-systemd-cgroupv2:latest
+    container_name: mon_network
+    hostname: mon_network
+    command: /usr/lib/systemd/systemd
+    memory: 256m
+    networks:
+      - podman-bridge
+    mac_address: 56:2f:2c:e0:bc:f2
+    detach: true
+    stdin_open: true
+    tty: true
+    restart: always
+    systemd: always
+    environment:
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    # post_start:
+    #   - command: |
+    #       /bin/bash -c "/usr/bin/uuidgen | sed 's/-//g' > /etc/machine-id"
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:latest
+    container_name: mon_prometheus
+    hostname: mon_prometheus
+    memory: 1g
+    network_mode: "service:network"
+    detach: true
+    stdin_open: true
+    tty: true
+    restart: always
+    systemd: always
+    environment:
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Data/docker/podman-mon_prometheus/etc:/etc/prometheus
+      - /media/Data/docker/podman-mon_prometheus/prometheus:/prometheus
+    depends_on:
+      - network
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=365d
+      - --storage.tsdb.retention.size=50GB
+
+  grafana:
+    image: docker.io/grafana/grafana:latest
+    container_name: mon_grafana
+    hostname: mon_grafana
+    memory: 1g
+    network_mode: "service:network"
+    detach: true
+    stdin_open: true
+    tty: true
+    restart: always
+    systemd: always
+    env_file:
+      - grafana.env
+    environment:
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Data/docker/podman-mon_grafana/etc:/etc/grafana
+      - /media/Data/docker/podman-mon_grafana/data:/var/lib/grafana
+    depends_on:
+      - network
+      - prometheus
+
+networks:
+  podman-bridge:
+    external: true
