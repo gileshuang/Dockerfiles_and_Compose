@@ -95,6 +95,28 @@ services:
     depends_on:
       - network
 
+  xunlei:
+    image: cnk3x/xunlei:latest
+    container_name: media_xunlei
+    hostname: media_xunlei
+    memory: 4g
+    stdin_open: true
+    tty: true
+    restart: always
+    network_mode: "service:network"
+    privileged: true
+    env_file:
+      - xunlei.env
+    environment:
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Data/docker/podman-media_xunlei/data:/xunlei/data
+      - /media/Downloads/TDDOWNLOAD:/xunlei/downloads
+    depends_on:
+      - network
+
 networks:
   podman-bridge:
     external: true
