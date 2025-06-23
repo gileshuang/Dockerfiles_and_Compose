@@ -117,6 +117,32 @@ services:
     depends_on:
       - network
 
+#  jellyfin:
+#    image: ghcr.io/jellyfin/jellyfin:latest
+#    # image: nyanmisaka/jellyfin:latest
+#    container_name: media_jellyfin
+#    hostname: media_jellyfin
+#    # memory: 8g
+#    network_mode: "service:network"
+#    # stdin_open: true
+#    # tty: true
+#    # restart: always
+#    # user: 1000:100
+#    env_file:
+#      - jellyfin.env
+#    environment:
+#      - TZ=Asia/Shanghai
+#      - LC_ALL=en_US.UTF-8
+#    security_opt:
+#      - seccomp=unconfined
+#    volumes:
+#      - /etc/localtime:/etc/localtime:ro
+#      - /media/Data/docker/podman-media_jellyfin/cache:/srv/jellyfin/cache
+#      - /media/Data/docker/podman-media_jellyfin/config:/srv/jellyfin/config
+#      - /medis/Storage01/UserData:/media:ro
+#    depends_on:
+#      - network
+
 networks:
   podman-bridge:
     external: true

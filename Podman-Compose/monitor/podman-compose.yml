@@ -27,7 +27,7 @@ services:
     image: quay.io/prometheus/prometheus:latest
     container_name: mon_prometheus
     hostname: mon_prometheus
-    memory: 1g
+    memory: 4g
     network_mode: "service:network"
     detach: true
     stdin_open: true
