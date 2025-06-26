@@ -2,11 +2,12 @@ version: 4.9
 
 services:
   network:
-    image: centos7-systemd-cgroupv2:latest
+    image: docker.io/library/archlinux:latest
     container_name: media_network
     hostname: media_network
     command: /usr/lib/systemd/systemd
-    memory: 256m
+    cpus: 1
+    mem_limit: 256m
     networks:
       - podman-bridge
     mac_address: 56:2f:2c:e0:bc:e9
@@ -16,9 +17,11 @@ services:
     restart: always
     systemd: always
     environment:
+      - TZ=Asia/Shanghai
       - LC_ALL=en_US.UTF-8
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - /usr/lib/locale:/usr/lib/locale:ro
     post_start:
       - command: |
           /bin/bash -c "/usr/bin/uuidgen | sed 's/-//g' > /etc/machine-id"
@@ -27,7 +30,7 @@ services:
     image: docker.io/filebrowser/filebrowser:latest
     container_name: media_filebrowser
     hostname: media_filebrowser
-    memory: 4g
+    mem_limit: 4g
     network_mode: "service:network"
     stdin_open: true
     tty: true
@@ -40,10 +43,11 @@ services:
       - LC_ALL=en_US.UTF-8
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - /media/Data/docker/podman-media_filebrowser/database:/database
+      - /media/Data/docker/podman-media_filebrowser/config:/config
+      - filebrowser-srv:/srv
       - /media/Storage01:/srv/jiayaohuang
       - /media/Storage01/temp/guest-upload:/srv/guest
-      - /media/Data/docker/podman-media_filebrowser/filebrowser.db:/database.db
-      - /media/Data/docker/podman-media_filebrowser/.filebrowser.json:/.filebrowser.json
     depends_on:
       - network
 
@@ -51,7 +55,7 @@ services:
     image:  lscr.io/linuxserver/qbittorrent:latest
     container_name: media_qbittorrent
     hostname: media_qbittorrent
-    memory: 4g
+    mem_limit: 4g
     network_mode: "service:network"
     stdin_open: true
     tty: true
@@ -76,7 +80,7 @@ services:
     image: soulteary/flare
     container_name: media_flare
     hostname: media_flare
-    memory: 256m
+    mem_limit: 256m
     network_mode: "service:network"
     stdin_open: true
     tty: true
@@ -99,7 +103,7 @@ services:
     image: cnk3x/xunlei:latest
     container_name: media_xunlei
     hostname: media_xunlei
-    memory: 4g
+    mem_limit: 4g
     stdin_open: true
     tty: true
     restart: always
@@ -122,7 +126,7 @@ services:
 #    # image: nyanmisaka/jellyfin:latest
 #    container_name: media_jellyfin
 #    hostname: media_jellyfin
-#    # memory: 8g
+#    # mem_limit: 8g
 #    network_mode: "service:network"
 #    # stdin_open: true
 #    # tty: true
@@ -142,6 +146,106 @@ services:
 #      - /medis/Storage01/UserData:/media:ro
 #    depends_on:
 #      - network
+
+  immich-server:
+    container_name: media_immich_server
+    hostname: media_immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    cpus: 6
+    mem_limit: 6g
+    user: 1000:100
+    network_mode: "service:network"
+    # extends:
+    #   file: hwaccel.transcoding.yml
+    #   service: cpu # set to one of [nvenc, quicksync, rkmpp, vaapi, vaapi-wsl] for accelerated transcoding
+    env_file:
+      - immich.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/lib/locale:/usr/lib/locale:ro
+      # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
+      - /media/Data/docker/podman-media_immich/upload:/usr/src/app/upload
+      - /media/Storage01/syncthing/照片（归档）/immich/encoded-video:/usr/src/app/upload/encoded-video
+      - /media/Storage01/syncthing/照片（归档）/immich/upload:/usr/src/app/upload/upload
+      - /media/Storage01/syncthing/照片（归档）/immich/library:/usr/src/app/upload/library
+      - /media/Storage01/syncthing/照片（归档）:/srv/photos-archive:ro
+    # ports:
+    #   - '2283:2283'
+    depends_on:
+      - immich-redis
+      - immich-database
+    restart: always
+    healthcheck:
+      disable: false
+
+  immich-machine-learning:
+    container_name: media_immich_machine_learning
+    hostname: media_immich_machine_learning
+    # For hardware acceleration, add one of -[armnn, cuda, rocm, openvino, rknn] to the image tag.
+    # Example tag: ${IMMICH_VERSION:-release}-cuda
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    cpus: 8
+    mem_limit: 8g
+    network_mode: "service:network"
+    # extends: # uncomment this section for hardware acceleration - see https://immich.app/docs/features/ml-hardware-acceleration
+    #   file: hwaccel.ml.yml
+    #   service: cpu # set to one of [armnn, cuda, rocm, openvino, openvino-wsl, rknn] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/lib/locale:/usr/lib/locale:ro
+      - immich-model-cache:/cache
+    env_file:
+      - immich.env
+    restart: always
+    healthcheck:
+      disable: false
+
+  immich-redis:
+    container_name: media_immich_redis
+    hostname: redis
+    image: docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177
+    cpus: 2
+    mem_limit: 2g
+    network_mode: "service:network"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/lib/locale:/usr/lib/locale:ro
+      - immich-redis-data:/data
+    healthcheck:
+      test: redis-cli ping || exit 1
+    restart: always
+    depends_on:
+      - network
+
+  immich-database:
+    container_name: media_immich_postgres
+    hostname: database
+    image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0
+    cpus: 4
+    mem_limit: 4g
+    env_file:
+      - immich.env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_DATABASE_NAME}
+      POSTGRES_INITDB_ARGS: '--data-checksums'
+      # Uncomment the DB_STORAGE_TYPE: 'HDD' var if your database isn't stored on SSDs
+      # DB_STORAGE_TYPE: 'HDD'
+    network_mode: "service:network"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/lib/locale:/usr/lib/locale:ro
+      # Do not edit the next line. If you want to change the database storage location on your system, edit the value of DB_DATA_LOCATION in the .env file
+      - /media/Data/docker/podman-media_immich/postgres:/var/lib/postgresql/data
+    restart: always
+    depends_on:
+      - network
+
+volumes:
+  filebrowser-srv:
+  immich-model-cache:
+  immich-redis-data:
 
 networks:
   podman-bridge:
