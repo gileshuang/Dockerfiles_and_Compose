@@ -1,0 +1,24 @@
+version: 5.5.2
+name: homenet
+
+services:
+  coredns:
+    image: coredns/coredns:latest
+    container_name: homenet_coredns
+    hostname: homenet_coredns
+    cpus: 2
+    mem_limit: 512m
+    network_mode: "host"
+    detach: true
+    stdin_open: true
+    tty: true
+    restart: always
+    systemd: always
+    environment:
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /usr/lib/locale:/usr/lib/locale:ro
+      - /media/Data/docker/podman-homenet_coredns/etc/coredns:/etc/coredns
+    command: -conf /etc/coredns/Corefile

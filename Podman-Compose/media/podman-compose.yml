@@ -152,8 +152,8 @@ services:
     hostname: media_immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     # image: immich-server:latest
-    cpus: 6
-    mem_limit: 6g
+    cpus: 8
+    mem_limit: 8g
     user: 1000:100
     network_mode: "service:network"
     # extends:
