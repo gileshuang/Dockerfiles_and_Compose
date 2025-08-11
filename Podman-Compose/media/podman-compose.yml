@@ -103,6 +103,7 @@ services:
     image: cnk3x/xunlei:latest
     container_name: media_xunlei
     hostname: media_xunlei
+    cpus: 4
     mem_limit: 4g
     stdin_open: true
     tty: true
@@ -121,31 +122,38 @@ services:
     depends_on:
       - network
 
-#  jellyfin:
-#    image: ghcr.io/jellyfin/jellyfin:latest
-#    # image: nyanmisaka/jellyfin:latest
-#    container_name: media_jellyfin
-#    hostname: media_jellyfin
-#    # mem_limit: 8g
-#    network_mode: "service:network"
-#    # stdin_open: true
-#    # tty: true
-#    # restart: always
-#    # user: 1000:100
-#    env_file:
-#      - jellyfin.env
-#    environment:
-#      - TZ=Asia/Shanghai
-#      - LC_ALL=en_US.UTF-8
-#    security_opt:
-#      - seccomp=unconfined
-#    volumes:
-#      - /etc/localtime:/etc/localtime:ro
-#      - /media/Data/docker/podman-media_jellyfin/cache:/srv/jellyfin/cache
-#      - /media/Data/docker/podman-media_jellyfin/config:/srv/jellyfin/config
-#      - /medis/Storage01/UserData:/media:ro
-#    depends_on:
-#      - network
+  jellyfin:
+    image: ghcr.io/jellyfin/jellyfin:latest
+    # image: nyanmisaka/jellyfin:latest
+    container_name: media_jellyfin
+    hostname: media_jellyfin
+    cpus: 8
+    mem_limit: 8g
+    network_mode: "service:network"
+    stdin_open: true
+    tty: true
+    restart: always
+    user: 1000:100
+    env_file:
+      - jellyfin.env
+    environment:
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+    security_opt:
+      - seccomp=unconfined
+    device:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Data/docker/podman-media_jellyfin/cache:/cache
+      - /media/Data/docker/podman-media_jellyfin/config:/config
+      - /media/Data/docker/podman-media_jellyfin/fonts:/usr/share/fonts
+      - /media/Data/docker/podman-media_jellyfin/fontconfig:/etc/fonts
+      - /media/Data/docker/podman-media_jellyfin/web-config.json:/jellyfin/jellyfin-web/config.json
+      - /media/Storage01/UserData:/media:ro
+      - /media/Storage01/syncthing:/syncthing:ro
+    depends_on:
+      - network
 
   immich-server:
     container_name: media_immich_server
@@ -197,6 +205,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /usr/lib/locale:/usr/lib/locale:ro
       - immich-model-cache:/cache
+      - immich-model-home-cache:/usr/src/.cache
+      - immich-model-home-config:/usr/src/.config
     env_file:
       - immich.env
     restart: always
@@ -250,6 +260,8 @@ services:
 volumes:
   filebrowser-srv:
   immich-model-cache:
+  immich-model-home-cache:
+  immich-model-home-config:
   immich-redis-data:
 
 networks:
