@@ -1,0 +1,21 @@
+version: 5.5.2
+
+services:
+  docs:
+    image: ghcr.io/vuetifyjs/docs:master
+    container_name: vuetifyjs_docs
+    hostname: vuetifyjs_docs
+    mem_limit: 2g
+    networks:
+      default: {}
+    stdin_open: true
+    tty: true
+    restart: always
+    ports:
+      - 2080:80
+    environment:
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
