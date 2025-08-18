@@ -216,7 +216,7 @@ services:
   immich-redis:
     container_name: media_immich_redis
     hostname: redis
-    image: docker.io/valkey/valkey:8-bookworm@sha256:fec42f399876eb6faf9e008570597741c87ff7662a54185593e74b09ce83d177
+    image: docker.io/valkey/valkey:8-bookworm
     cpus: 2
     mem_limit: 2g
     network_mode: "service:network"
