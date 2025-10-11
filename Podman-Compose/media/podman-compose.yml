@@ -173,11 +173,12 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - /usr/lib/locale:/usr/lib/locale:ro
       # Do not edit the next line. If you want to change the media storage location on your system, edit the value of UPLOAD_LOCATION in the .env file
-      - /media/Data/docker/podman-media_immich/upload:/usr/src/app/upload
-      - /media/Storage01/syncthing/照片（归档）/immich/encoded-video:/usr/src/app/upload/encoded-video
-      - /media/Storage01/syncthing/照片（归档）/immich/upload:/usr/src/app/upload/upload
-      - /media/Storage01/syncthing/照片（归档）/immich/library:/usr/src/app/upload/library
-      - /media/Storage01/syncthing/照片（归档）:/srv/photos-archive:ro
+      - /media/Data/docker/podman-media_immich/data:/data
+      - /media/Storage01/syncthing/照片（归档）/immich/encoded-video:/data/encoded-video
+      - /media/Storage01/syncthing/照片（归档）/immich/upload:/data/upload
+      - /media/Storage01/syncthing/照片（归档）/immich/library:/data/library
+      - /media/Storage01/backups/immich-server.backups:/data/backups
+      - /media/Storage01/temp/Immich-Archive-Temp:/srv/Immich-Archive-Temp
     # ports:
     #   - '2283:2283'
     depends_on:
