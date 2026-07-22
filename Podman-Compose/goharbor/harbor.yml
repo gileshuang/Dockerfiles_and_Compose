@@ -1,0 +1,8 @@
+hostname: 127.0.0.1          # 对外地址，按需改
+http:
+  port: 80
+harbor_admin_password: Harbor12345
+data_volume: ./data            # 存储目录，可改绝对路径
+database:
+  password: root123
+

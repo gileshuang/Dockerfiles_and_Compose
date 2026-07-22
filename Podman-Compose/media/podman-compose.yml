@@ -72,7 +72,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /media/Data/docker/podman-media_qbittorrent/config:/config
-      - /media/Downloads/qbittorrent:/downloads
+      - /media/Data/Downloads/qbittorrent:/downloads
     depends_on:
       - network
 
@@ -118,7 +118,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /media/Data/docker/podman-media_xunlei/data:/xunlei/data
-      - /media/Downloads/TDDOWNLOAD:/xunlei/downloads
+      - /media/Data/Downloads/TDDOWNLOAD:/xunlei/downloads
     depends_on:
       - network
 
@@ -255,6 +255,27 @@ services:
       - /media/Data/docker/podman-media_immich/postgres:/var/lib/postgresql/data
     shm_size: 128mb
     restart: always
+    depends_on:
+      - network
+
+  miair:
+    image: ghcr.io/syunss/miair:latest
+    container_name: media_miair
+    hostname: media_miair
+    cpus: 4
+    mem_limit: 512m
+    network_mode: "service:network"
+    stdin_open: true
+    tty: true
+    restart: always
+    env_file:
+      - miair.env
+    environment:
+      - TZ=Asia/Shanghai
+      - LC_ALL=en_US.UTF-8
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /media/Data/podman/podman-media_miair/conf:/app/conf
     depends_on:
       - network
 

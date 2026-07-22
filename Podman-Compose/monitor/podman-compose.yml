@@ -47,6 +47,7 @@ services:
       - network
     command:
       - --config.file=/etc/prometheus/prometheus.yml
+      - --web.config.file=/etc/prometheus/web-config.yml
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=365d
       - --storage.tsdb.retention.size=50GB
