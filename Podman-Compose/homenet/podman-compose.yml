@@ -20,5 +20,5 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /usr/lib/locale:/usr/lib/locale:ro
-      - /media/Data/docker/podman-homenet_coredns/etc/coredns:/etc/coredns
+      - /media/Data/containers/podman-homenet_coredns/etc/coredns:/etc/coredns
     command: -conf /etc/coredns/Corefile

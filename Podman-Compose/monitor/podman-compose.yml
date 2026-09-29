@@ -41,8 +41,8 @@ services:
       - LC_ALL=en_US.UTF-8
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /media/Data/docker/podman-mon_prometheus/etc:/etc/prometheus
-      - /media/Data/docker/podman-mon_prometheus/prometheus:/prometheus
+      - /media/Data/containers/podman-mon_prometheus/etc:/etc/prometheus
+      - /media/Data/containers/podman-mon_prometheus/prometheus:/prometheus
     depends_on:
       - network
     command:
@@ -69,8 +69,8 @@ services:
       - LC_ALL=en_US.UTF-8
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /media/Data/docker/podman-mon_grafana/etc:/etc/grafana
-      - /media/Data/docker/podman-mon_grafana/data:/var/lib/grafana
+      - /media/Data/containers/podman-mon_grafana/etc:/etc/grafana
+      - /media/Data/containers/podman-mon_grafana/data:/var/lib/grafana
     depends_on:
       - network
       - prometheus
